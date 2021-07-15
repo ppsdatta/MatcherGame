@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace MatcherGame
 {
@@ -26,10 +27,18 @@ namespace MatcherGame
 
         private int matchCount = 0;
 
+        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
+
+        private long timeSoFar = 0;
+
+        private const long MAXCOUNT = 200;
+
 
         public MainWindow()
         {
             InitializeComponent();
+            dispatcherTimer.Interval = TimeSpan.FromSeconds(.1);
+            dispatcherTimer.Tick += Timer_Tick;
             SetupGame();
         }
 
@@ -62,7 +71,24 @@ namespace MatcherGame
             lastAnimalSelected = null;
             finidingMatch = false;
             matchCount = 0;
+
+            timeSoFar = 0;
+            dispatcherTimer.Stop();
+            dispatcherTimer.Start();
     }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            timeSoFar++;
+            timerLabel.Content = timeSoFar.ToString();
+
+            if (timeSoFar >= MAXCOUNT)
+            {
+                dispatcherTimer.Stop();
+                MessageBox.Show("Oops time's up!");
+                SetupGame();
+            }
+        }
 
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -84,7 +110,8 @@ namespace MatcherGame
 
                     if (matchCount == 10)
                     {
-                        MessageBox.Show("Game over");
+                        dispatcherTimer.Stop();
+                        MessageBox.Show("You win!!");
                         SetupGame();
                     }
                 }
